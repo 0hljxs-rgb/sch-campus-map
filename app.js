@@ -130,10 +130,11 @@ function applyView(animate) {
   plane.classList.toggle('anim', !!animate);
   const flat = !state.tilt;
   const sc = state.zoom * (flat ? 0.7 : 1);
-  plane.style.transform = `translate(${state.panX}px, ${state.panY}px) rotateX(${state.tilt}deg) rotateZ(${state.rot}deg) scale(${sc})`;
+  plane.style.transform = `translate(${state.panX}px, ${state.panY}px) rotateX(${state.tilt}deg) rotateZ(${state.rot}deg) scale3d(${sc}, ${sc}, ${sc})`;   // 높이(z)도 같이 줄여 건물·땅 비율 고정
   const k = clamp(0.8 / sc, 1, 2.2);   // keep labels a constant, readable size
   map.classList.toggle('far', sc < 0.7);
   plane.style.setProperty('--bill', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg) scale(${k})`);
+  plane.style.setProperty('--bill-tree', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg)`);   // 나무는 지도와 함께 커지고 작아짐
   $('compass').style.transform = `rotate(${state.rot}deg)`;
   $('btn-tilt').textContent = flat ? '3D' : '2D';
   scheduleDeclutter(animate ? 650 : 0);
