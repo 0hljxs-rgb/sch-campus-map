@@ -36,7 +36,7 @@ if (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Android/.test(navigator.
 
 // ---------- state ----------
 const small = window.matchMedia('(max-width: 899px)').matches;
-const HOME = { rot: -12, tilt: 52, zoom: small ? 0.42 : 0.9, panX: small ? 46 : 0, panY: small ? -30 : 0 };
+const HOME = { rot: -12, tilt: 52, zoom: small ? 0.42 : 0.9, panX: 0, panY: 0 };   // fitHome()이 화면 크기에 맞춰 다시 계산
 const state = { ...HOME, names: !small, amen: true, sel: null, sheet: 'peek' };
 
 // ---------- build data ----------
@@ -131,7 +131,8 @@ function applyView(animate) {
   const flat = !state.tilt;
   const sc = state.zoom * (flat ? 0.7 : 1);
   plane.style.transform = `translate(${state.panX}px, ${state.panY}px) rotateX(${state.tilt}deg) rotateZ(${state.rot}deg) scale3d(${sc}, ${sc}, ${sc})`;   // 높이(z)도 같이 줄여 건물·땅 비율 고정
-  const k = clamp(0.8 / sc, 1, 2.2);   // keep labels a constant, readable size
+  // 이름표 크기: 확대하면 일정한 크기, 휴대폰에서 많이 축소하면 지도와 함께 작아져 비율이 덜 깨지게
+  const k = small ? clamp(0.62 / sc, 1, 1.75) : clamp(0.8 / sc, 1, 2.2);
   map.classList.toggle('far', sc < 0.7);
   plane.style.setProperty('--bill', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg) scale(${k})`);
   plane.style.setProperty('--bill-tree', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg)`);   // 나무는 지도와 함께 커지고 작아짐
@@ -330,7 +331,7 @@ function startGesture() {
     gesture = { n: 2, dist: Math.hypot(b.x - a.x, b.y - a.y) || 1, ang: Math.atan2(b.y - a.y, b.x - a.x), zoom: state.zoom, rot: state.rot, panX: state.panX, panY: state.panY, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
   } else gesture = null;
 }
-map.addEventListener('wheel', (e) => { e.preventDefault(); state.zoom = clamp(state.zoom * (e.deltaY < 0 ? 1.08 : 0.92), 0.4, 2.4); applyView(false); }, { passive: false });
+map.addEventListener('wheel', (e) => { e.preventDefault(); state.zoom = clamp(state.zoom * (e.deltaY < 0 ? 1.08 : 0.92), 0.25, 2.4); applyView(false); }, { passive: false });
 let lastTap = 0;
 map.addEventListener('click', (e) => {
   const chip = e.target.closest('.chip');
@@ -363,10 +364,45 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   });
 })();
 
+// ---------- 화면 크기에 맞춰 캠퍼스 전체가 보이게 시작 시점 계산 ----------
+function fitHome() {
+  const vw = map.clientWidth, vh = map.clientHeight;
+  const sh = $('sheet').getBoundingClientRect(), tb = $('topbar').getBoundingClientRect(), ct = $('controls').getBoundingClientRect();
+  const side = sh.height < vh * 0.97 && sh.top < vh * 0.3;          // 시트가 옆에 붙는 배치(PC·가로 화면)
+  const box = {
+    l: side && sh.left < vw / 2 ? sh.right + 8 : 8,
+    r: (side && sh.left >= vw / 2 ? sh.left - 8 : vw - 8) - (small ? 0 : ct.width + 10),
+    t: tb.bottom + 6,
+    b: side ? vh - 8 : Math.min(vh, sh.top) - 6,
+  };
+  if (box.r - box.l < 120 || box.b - box.t < 120) return;
+  Object.assign(state, { rot: HOME.rot, tilt: HOME.tilt, zoom: 1, panX: 0, panY: 0 });
+  let fb = $('fitbox');
+  if (!fb) {   // 캠퍼스 영역(건물·정문 포함)만 화면에 맞추기 위한 보이지 않는 기준 상자
+    fb = document.createElement('div'); fb.id = 'fitbox';
+    fb.style.cssText = `position:absolute;left:${X(470)}px;top:${Y(400)}px;width:${1585 - 470}px;height:${Y(1160) - Y(400)}px;visibility:hidden;pointer-events:none`;
+    $('layer-trees').appendChild(fb);
+  }
+  for (let i = 0; i < 3; i++) {
+    applyView(false);
+    const g = fb.getBoundingClientRect();
+    const k = Math.min((box.r - box.l) / g.width, (box.b - box.t) / g.height);
+    state.zoom = clamp(state.zoom * k * (small ? 1.06 : 0.98), 0.25, 1.4);
+    applyView(false);
+    const g2 = fb.getBoundingClientRect();
+    state.panX += (box.l + box.r) / 2 - (g2.left + g2.right) / 2;
+    state.panY += (box.t + box.b) / 2 - (g2.top + g2.bottom) / 2;
+  }
+  applyView(false);
+  Object.assign(HOME, { zoom: state.zoom, panX: state.panX, panY: state.panY });
+}
+let fitTimer = 0;
+window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = setTimeout(fitHome, 450); });
+
 // ---------- wiring ----------
 $('btn-reset').addEventListener('click', () => { Object.assign(state, HOME); applyView(true); });
 $('btn-zin').addEventListener('click', () => { state.zoom = clamp(state.zoom * 1.25, 0.4, 2.4); applyView(true); });
-$('btn-zout').addEventListener('click', () => { state.zoom = clamp(state.zoom / 1.25, 0.4, 2.4); applyView(true); });
+$('btn-zout').addEventListener('click', () => { state.zoom = clamp(state.zoom / 1.25, 0.25, 2.4); applyView(true); });
 $('btn-rotl').addEventListener('click', () => { state.rot -= 45; applyView(true); });
 $('btn-rotr').addEventListener('click', () => { state.rot += 45; applyView(true); });
 $('btn-tilt').addEventListener('click', () => { state.tilt = state.tilt ? 0 : 52; applyView(true); });
@@ -390,6 +426,8 @@ renderStatic();
 applyView(false);
 applyLabels();
 renderSheet();
+fitHome();
+requestAnimationFrame(fitHome);
 
 // 웹앱(홈 화면 추가)으로 열렸을 때 오프라인 동작을 위해 서비스 워커 등록 (네이티브 앱 안에서는 필요 없음)
 if ('serviceWorker' in navigator && !window.Capacitor && (location.protocol === 'https:' || location.hostname === 'localhost')) {

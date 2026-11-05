@@ -138,12 +138,13 @@ svg { display: block; }
 
 /* ---------- bottom sheet ---------- */
 #sheet {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: 86vh; background: #fff; border-radius: 22px 22px 0 0;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; height: 86vh; height: 86dvh; background: #fff; border-radius: 22px 22px 0 0;
   box-shadow: 0 -12px 40px rgba(16, 26, 48, 0.16); display: flex; flex-direction: column;
-  transform: translateY(calc(86vh - var(--sheet-peek) - var(--safe-b))); transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateY(calc(86vh - var(--sheet-peek) - var(--safe-b)));
+  transform: translateY(calc(86dvh - var(--sheet-peek) - var(--safe-b))); transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
-#sheet.has-sel:not(.half):not(.full) { transform: translateY(calc(86vh - 312px - var(--safe-b))); }
-#sheet.half { transform: translateY(42vh); }
+#sheet.has-sel:not(.half):not(.full) { transform: translateY(calc(86vh - 312px - var(--safe-b))); transform: translateY(calc(86dvh - 312px - var(--safe-b))); }
+#sheet.half { transform: translateY(42vh); transform: translateY(42dvh); }
 #sheet.full { transform: translateY(0); }
 #sheet.dragging { transition: none; }
 #sheet-handle { flex: none; width: 100%; height: 28px; border: 0; background: transparent; display: flex; align-items: center; justify-content: center; cursor: grab; touch-action: none; }
@@ -198,6 +199,17 @@ svg { display: block; }
   #topbar { right: 412px; max-width: 460px; }
   #controls { right: 412px; }
 }
+/* 휴대폰 가로 화면: 목록을 왼쪽 패널로, 버튼은 2줄로 */
+@media (max-width: 899px) and (orientation: landscape) and (max-height: 540px) {
+  #sheet { left: calc(env(safe-area-inset-left, 0px) + 8px); right: auto; top: 8px; bottom: 8px; width: 300px; height: auto; border-radius: 18px; transform: none !important; }
+  #sheet-handle { display: none; }
+  #sheet-body { overflow-y: auto !important; padding-top: 12px; }
+  #topbar { left: calc(env(safe-area-inset-left, 0px) + 318px); right: calc(env(safe-area-inset-right, 0px) + 12px); top: 8px; }
+  #controls { top: 64px; right: calc(env(safe-area-inset-right, 0px) + 8px); display: grid; grid-template-columns: repeat(2, 40px); gap: 2px; }
+  #controls .sep { display: none; }
+  .ctl { width: 40px; height: 40px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #plane.anim, #plane.anim .bb, #sheet { transition: none; }
 }
