@@ -37,7 +37,11 @@ if (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Android/.test(navigator.
 // ---------- state ----------
 const small = window.matchMedia('(max-width: 899px)').matches;
 const HOME = { rot: -12, tilt: 52, zoom: small ? 0.42 : 0.9, panX: 0, panY: 0 };   // fitHome()이 화면 크기에 맞춰 다시 계산
-const state = { ...HOME, names: !small, amen: true, sel: null, sheet: 'peek' };
+let savedTheme = null;
+try { savedTheme = localStorage.getItem('theme'); } catch (e) { /* 저장소를 못 쓰는 환경 */ }
+const state = { ...HOME, names: !small, amen: true, sel: null, sheet: 'peek',
+  dark: savedTheme ? savedTheme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches };
+const STORE_BLUE = '#1C6ED8', CAFE_BROWN = '#9A5B34';
 
 // ---------- build data ----------
 const buildings = [];   // {n, name, c, base, code, cx, cy, top, floors}
@@ -47,7 +51,7 @@ SPECS.forEach(([n, name, c, parts]) => {
   let top = 0;
   const add = (x1, x2, yt, yb, hs, zs, ground, unit) => {
     if (ground) { const ix = Math.min(3, (x2 - x1) / 5), iy = Math.min(3, (yb - yt) / 5); x1 += ix; x2 -= ix; yt += iy; yb -= iy; }
-    masses.push({ n, base, unit, ground, x: X(x1), y: Y(yt), w: x2 - x1, d: (yb - yt) / C, h: hs / S, z: zs / S, tall: hs >= 12, sh: 3 + Math.min(10, hs * 0.12) });
+    masses.push({ n, base, unit, ground, x: X(x1), y: Y(yt), w: x2 - x1, d: (yb - yt) / C, h: hs / S, z: zs / S, tall: hs >= 12, sh: 4 + Math.min(18, hs * 0.3) });
   };
   parts.forEach(([x1, x2, yt, yb, hs, zs]) => { add(x1, x2, yt, yb, hs, zs || 0, !zs, false); top = Math.max(top, (zs || 0) + hs); });
   const [x1, x2, yt, yb, hs] = parts[0];
@@ -73,32 +77,40 @@ const $ = (id) => document.getElementById(id);
 const plane = $('plane'), map = $('map');
 
 function massHTML(m) {
+  const dk = state.dark, dim = state.sel != null;
   const on = !m.unit && state.sel === m.n;
-  const top = m.unit ? null : (on ? ACCENT : m.base);
-  const ns = (m.tall ? `repeating-linear-gradient(90deg, ${WALL_A} 0 3px, transparent 3px 8px), repeating-linear-gradient(180deg, ${WALL_A} 0 5px, ${WIN} 5px 8px), ` : '');
-  const ew = (m.tall ? `repeating-linear-gradient(180deg, ${WALL_B} 0 3px, transparent 3px 8px), repeating-linear-gradient(90deg, ${WALL_B} 0 5px, ${WIN} 5px 8px), ` : '');
-  const bgNS = `linear-gradient(180deg, rgba(255,255,255,0) 55%, rgba(16,26,48,0.14) 100%), ${ns}linear-gradient(${WALL_A}, ${WALL_A})`;
-  const bgEW = `linear-gradient(90deg, rgba(255,255,255,0) 55%, rgba(16,26,48,0.18) 100%), ${ew}linear-gradient(${WALL_B}, ${WALL_B})`;
-  const roof = m.unit ? 'linear-gradient(135deg, #9AA3B0, #7C8696)' : `linear-gradient(135deg, ${shade(top, 1.22)} 0%, ${top} 70%)`;
-  const rim = m.unit ? '#B4BBC6' : shade(top, 1.4);
+  // 크림색 벽·지붕, 건물 종류는 지붕 테두리 색으로만 구분 (다크 모드: 어두운 벽 + 불 켜진 창문)
+  const WA = dk ? '#3A404B' : '#FBF9F4', WB = dk ? '#2B3039' : '#E2DCD0', WN = dk ? 'rgba(255,206,120,0.55)' : 'rgba(128,138,152,0.26)';
+  const AO = dk ? ['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.35)'] : ['rgba(70,58,40,0.16)', 'rgba(70,58,40,0.22)'];
+  const ns = (m.tall ? `repeating-linear-gradient(90deg, ${WA} 0 3px, transparent 3px 8px), repeating-linear-gradient(180deg, ${WA} 0 5px, ${WN} 5px 8px), ` : '');
+  const ew = (m.tall ? `repeating-linear-gradient(180deg, ${WB} 0 3px, transparent 3px 8px), repeating-linear-gradient(90deg, ${WB} 0 5px, ${WN} 5px 8px), ` : '');
+  const bgNS = `linear-gradient(180deg, rgba(255,255,255,0) 50%, ${AO[0]} 100%), ${ns}linear-gradient(${WA}, ${WA})`;
+  const bgEW = `linear-gradient(90deg, rgba(255,255,255,0) 45%, ${AO[1]} 100%), ${ew}linear-gradient(${WB}, ${WB})`;
+  const roof = m.unit ? (dk ? 'linear-gradient(135deg, #353B45, #2B3039)' : 'linear-gradient(135deg, #EEEAE2, #DCD6CB)')
+    : on ? `linear-gradient(135deg, ${shade(ACCENT, 1.15)} 0%, ${ACCENT} 80%)`
+    : dk ? (dim ? 'linear-gradient(135deg, #2E333C, #262A32)' : 'linear-gradient(135deg, #4A515D 0%, #3B414C 80%)')
+    : (dim ? 'linear-gradient(135deg, #F7F5F0, #ECE8E0)' : 'linear-gradient(135deg, #FFFDF8 0%, #F1ECE2 80%)');
+  const rim = m.unit ? (dk ? '#454C58' : '#D3CCBF') : on ? shade(ACCENT, 0.8) : (dim ? shade(m.base, dk ? 0.7 : 1.75) : shade(m.base, dk ? 1.35 : 1.15));
   const { w, d, h } = m;
   return `<div class="mass" data-n="${m.unit ? '' : m.n}" style="left:${m.x}px;top:${m.y}px;width:${w}px;height:${d}px;transform:translateZ(${m.z}px)">` +
-    (m.ground ? `<div class="sh" style="left:${m.sh}px;top:${m.sh}px;width:${w}px;height:${d}px;background:rgba(20,30,50,0.22)"></div>` : '') +
+    (m.ground ? `<div class="sh" style="left:${m.sh}px;top:${m.sh}px;width:${w}px;height:${d}px;background:${state.dark ? 'rgba(0,0,0,0.42)' : 'rgba(80,66,44,0.2)'}"></div>` : '') +
     `<div class="ns" style="left:0;top:${-h}px;width:${w}px;height:${h}px;background:${bgNS}"></div>` +
     `<div class="ew" style="left:${-h}px;top:0;width:${h}px;height:${d}px;background:${bgEW}"></div>` +
     `<div class="ew" style="left:${w - h}px;top:0;width:${h}px;height:${d}px;background:${bgEW}"></div>` +
     `<div class="ns" style="left:0;top:${d - h}px;width:${w}px;height:${h}px;background:${bgNS}"></div>` +
-    `<div class="roof" data-roof="${m.unit ? '' : m.n}" style="width:${w}px;height:${d}px;border:1.5px solid ${rim};background:${roof};transform:translateZ(${h}px)"></div></div>`;
+    `<div class="roof" data-roof="${m.unit ? '' : m.n}" style="width:${w}px;height:${d}px;border:2px solid ${rim};background:${roof};transform:translateZ(${h}px)"></div></div>`;
 }
 
 function renderStatic() {
   // trees
-  const greens = [['#9CCB8B', '#5E9A57'], ['#A8D295', '#6AA562'], ['#8FC17E', '#548E4E'], ['#B2D89F', '#73AC69']];
-  $('layer-trees').innerHTML = buildTreePoints().map(([ix, iy, cf], i) => {
-    const sz = 11 + Math.round(Math.abs(Math.sin(i * 7.3)) * 5);
+  const dk = state.dark;
+  const greens = dk ? [['#4E6A4C', '#2C4030'], ['#486447', '#283B2B'], ['#557253', '#30462F'], ['#435E43', '#263826']] : [['#BDD0A4', '#7C9970'], ['#B1C798', '#718F64'], ['#C6D8AE', '#86A276'], ['#AABF8F', '#6A895D']];
+  $('ground').src = dk ? 'assets/ground-dark.svg' : 'assets/ground.svg';
+  $('layer-trees').innerHTML = buildTreePoints().filter((q, i) => q[2] || i % 3 !== 1).map(([ix, iy, cf], i) => {
+    const sz = 13 + Math.round(Math.abs(Math.sin(i * 7.3)) * 6);
     const conifer = cf || (ix > 1380 && iy > 940);
     const x = X(ix), y = Y(iy);
-    const g = conifer ? ['#7FB07A', '#3F7444'] : greens[i % 4];
+    const g = conifer ? (dk ? ['#3F5A43', '#22362A'] : ['#97B189', '#56734F']) : greens[i % 4];
     const ch = Math.round(sz * (conifer ? 1.7 : 1.12));
     const shape = conifer ? '50% 50% 40% 40% / 70% 70% 30% 30%' : '50% 50% 46% 46%';
     return `<div class="tsh" style="left:${x - sz / 2 + 4}px;top:${y - sz / 4 + 3}px;width:${sz * 1.1}px;height:${sz / 2}px"></div>` +
@@ -110,17 +122,17 @@ function renderStatic() {
     ? `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px"><div class="in"><div class="bus" role="img" aria-label="버스 정류장"><span>${svg('bus')}</span></div><div class="stem"></div></div></div>`
     : `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px"><div class="in"><div class="gate">${svg('gate')}${esc(k)}</div><div class="stem"></div></div></div>`).join('');
   const amen = AMENITIES.map(([k, label, where, px, py]) =>
-    `<div class="bb amen" style="left:${X(px)}px;top:${Y(py)}px;--z:3px"><div class="in"><div class="mk" role="img" aria-label="${esc(label + ' · ' + where)}"><span class="ic" style="background:${k === 'store' ? '#1F8A5B' : '#9A5B34'}">${svg(k)}</span>${esc(label)}</div></div></div>`).join('');
-  const aed = AEDS.map(([label, where, px, py]) =>
-    `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px;--z:4px"><div class="in"><div class="mk aed" role="img" aria-label="자동심장충격기 · ${esc(label)}"><span class="ic">${AED_SVG}</span>AED</div></div></div>`).join('');
+    `<div class="bb amen" style="left:${X(px)}px;top:${Y(py)}px;--z:3px"><div class="in"><div class="mk" role="img" aria-label="${esc(label + ' · ' + where)}"><span class="ic" style="background:${k === 'store' ? STORE_BLUE : CAFE_BROWN}">${svg(k)}</span><span class="t">${esc(label)}</span></div></div></div>`).join('');
   const smoke = SMOKING.map(([label, px, py]) =>
-    `<div class="smz" style="left:${X(px) - 16}px;top:${Y(py) - 16}px"></div>` +
-    `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px;--z:3px"><div class="in"><div class="mk smk" role="img" aria-label="흡연구역 · 화재 위험 · ${esc(label)}"><span class="ic">${FIRE_SVG}</span>흡연구역</div></div></div>`).join('');
+    `<div class="smz" style="left:${X(px) - 12}px;top:${Y(py) - 12}px"></div>` +
+    `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px;--z:3px"><div class="in"><div class="mk smk" role="img" aria-label="흡연구역 · 화재 위험 · ${esc(label)}"><span class="ic">${FIRE_SVG}</span><span class="t">흡연구역</span></div></div></div>`).join('');
   const chips = buildings.map((b) =>
     `<div class="bb" style="left:${b.cx}px;top:${b.cy}px;--z:${b.z}px"><div class="in"><button type="button" class="chip${b.code ? '' : ' nocode'}" data-n="${b.n}" aria-label="${esc(b.name)} 정보 보기">` +
     (b.code ? `<span class="code mono" style="background:${b.base}">${esc(b.code)}</span>` : '') +
-    `<span class="name">${esc(b.name)}</span></button><div class="tip"></div></div></div>`).join('');
-  $('layer-markers').innerHTML = smoke + pois + amen + aed + chips;
+    `<span class="name">${esc(b.name)}</span>` +
+    (AEDS.some((a) => a[0] === b.name) ? `<span class="aedb" role="img" aria-label="자동심장충격기(AED) 있음">${AED_SVG}AED</span>` : '') +
+    `</button><div class="tip"></div></div></div>`).join('');
+  $('layer-markers').innerHTML = smoke + pois + amen + chips;
   scheduleDeclutter();
 }
 function renderBuildings() { $('layer-buildings').innerHTML = masses.map(massHTML).join(''); }
@@ -134,6 +146,7 @@ function applyView(animate) {
   // 이름표 크기: 확대하면 일정한 크기, 휴대폰에서 많이 축소하면 지도와 함께 작아져 비율이 덜 깨지게
   const k = small ? clamp(0.62 / sc, 1, 1.75) : clamp(0.8 / sc, 1, 2.2);
   map.classList.toggle('far', sc < 0.7);
+  map.classList.toggle('near', sc >= 1.1);   // 충분히 확대했을 때만 편의점·흡연구역 글자 표시
   plane.style.setProperty('--bill', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg) scale(${k})`);
   plane.style.setProperty('--bill-tree', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg)`);   // 나무는 지도와 함께 커지고 작아짐
   $('compass').style.transform = `rotate(${state.rot}deg)`;
@@ -257,17 +270,17 @@ function renderSheet() {
       <button type="button" class="close" data-act="clear" aria-label="선택 해제">${svg('close')}</button></div>
       ${f ? `<div class="tiles"><div class="tile"><small>지상</small><b>${f[1]}<em>층</em></b></div><div class="tile"><small>지하</small><b>${f[0]}<em>층</em></b></div></div>`
           : `<div class="tile" style="font-size:15px;font-weight:600">${esc(OUTDOOR[b.n] || '정보 없음')}</div>`}
-      ${(here.length || aed.length) ? `<div class="here">${here.map((a) => `<span><i style="background:${a[0] === 'store' ? '#1F8A5B' : '#9A5B34'}"></i>${esc(a[1])} · ${esc(a[2].split(' ').slice(1).join(' ') || '')}</span>`).join('')}${aed.map(() => '<span><i style="background:#D93A3A"></i>AED</span>').join('')}</div>` : ''}
+      ${(here.length || aed.length) ? `<div class="here">${here.map((a) => `<span><i style="background:${a[0] === 'store' ? STORE_BLUE : CAFE_BROWN}"></i>${esc(a[1])} · ${esc(a[2].split(' ').slice(1).join(' ') || '')}</span>`).join('')}${aed.map(() => '<span><i style="background:#D93A3A"></i>AED</span>').join('')}</div>` : ''}
     </div></article>`;
   })() : `<div class="hint"><div class="ico">${svg('building')}</div><div><b>건물을 선택하세요</b><span>지도 이름표를 누르거나 목록을 펼쳐 보세요.</span></div></div>`;
 
   const groups = ['a', 's', 'd', 'p'].map((c) => {
     const items = buildings.filter((q) => q.c === c);
     return `<section class="group"><h3><i style="background:${CATS[c]}"></i>${CAT_LABEL[c]}</h3>` + items.map((q) =>
-      `<button type="button" class="row${state.sel === q.n ? ' on' : ''}" data-n="${q.n}"><span class="badge mono" style="background:${q.code ? (state.sel === q.n ? ACCENT : q.base) : '#EEF1F5'};color:${q.code ? (state.sel === q.n ? INK : '#fff') : '#8A93A2'}">${esc(q.code || '·')}</span><span class="nm">${esc(q.name)}</span><span class="sub mono">${q.short}</span></button>`).join('') + '</section>';
+      `<button type="button" class="row${state.sel === q.n ? ' on' : ''}" data-n="${q.n}"><span class="badge mono" style="background:${q.code ? (state.sel === q.n ? ACCENT : q.base) : 'var(--soft)'};color:${q.code ? (state.sel === q.n ? INK : '#fff') : 'var(--faint)'}">${esc(q.code || '·')}</span><span class="nm">${esc(q.name)}</span><span class="sub mono">${q.short}</span></button>`).join('') + '</section>';
   }).join('');
-  const amen = `<section class="group"><h3><i style="background:#1F8A5B"></i>편의점 · 카페</h3>` + AMENITIES.map(([k, label, where]) =>
-    `<div class="row" style="cursor:default"><span class="badge" style="background:${k === 'store' ? '#1F8A5B' : '#9A5B34'}">${svg(k)}</span><span class="nm">${esc(label)}</span><span class="sub">${esc(where)}</span></div>`).join('') + '</section>';
+  const amen = `<section class="group"><h3><i style="background:${STORE_BLUE}"></i>편의점(GS25) · 카페</h3>` + AMENITIES.map(([k, label, where]) =>
+    `<div class="row" style="cursor:default"><span class="badge" style="background:${k === 'store' ? STORE_BLUE : CAFE_BROWN}">${svg(k)}</span><span class="nm">${esc(label)}</span><span class="sub">${esc(where)}</span></div>`).join('') + '</section>';
   const aed = `<section class="group"><h3><i style="background:#D93A3A"></i>자동심장충격기 (AED)</h3>` + AEDS.map(([label, where]) =>
     `<div class="row" style="cursor:default"><span class="badge" style="background:#D93A3A">${AED_SVG}</span><span class="nm" style="font-weight:600">${esc(label)}</span><span class="sub">${esc(where)}</span></div>`).join('') +
     '<p class="note">국가 AED 등록 정보 기준이라 미등록 기기는 표시되지 않아요.</p></section>';
@@ -286,7 +299,7 @@ function runSearch() {
   const hits = buildings.filter((b) => b.name.toLowerCase().includes(q) || (b.code && b.code.toLowerCase() === q) || (b.code && q.startsWith(b.code.toLowerCase()) && /^[a-z]*\d/.test(q)));
   box.hidden = false;
   box.innerHTML = hits.length ? hits.slice(0, 12).map((b) =>
-    `<li><button type="button" data-n="${b.n}"><span class="badge mono" style="min-width:36px;height:26px;padding:0 6px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;background:${b.code ? b.base : '#EEF1F5'};color:${b.code ? '#fff' : '#8A93A2'}">${esc(b.code || '·')}</span><span style="flex:1;font-size:15px">${esc(b.name)}</span><span class="mono" style="font-size:12.5px;color:#8A93A2">${b.short}</span></button></li>`).join('')
+    `<li><button type="button" data-n="${b.n}"><span class="badge mono" style="min-width:36px;height:26px;padding:0 6px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;background:${b.code ? b.base : 'var(--soft)'};color:${b.code ? '#fff' : 'var(--faint)'}">${esc(b.code || '·')}</span><span style="flex:1;font-size:15px">${esc(b.name)}</span><span class="mono" style="font-size:12.5px;color:var(--faint)">${b.short}</span></button></li>`).join('')
     : '<li class="empty">일치하는 건물이 없어요. 건물 이름이나 강의실 코드(예: U, 9, ML)로 찾아보세요.</li>';
 }
 
@@ -401,6 +414,17 @@ window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = set
 
 // ---------- wiring ----------
 $('btn-reset').addEventListener('click', () => { Object.assign(state, HOME); applyView(true); });
+function applyTheme() {
+  document.documentElement.dataset.theme = state.dark ? 'dark' : 'light';
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', state.dark ? '#14171D' : '#F2EFE8');
+  $('btn-dark').classList.toggle('on', state.dark);
+  $('btn-dark').setAttribute('aria-pressed', state.dark);
+}
+$('btn-dark').addEventListener('click', () => {
+  state.dark = !state.dark;
+  try { localStorage.setItem('theme', state.dark ? 'dark' : 'light'); } catch (e) { /* 저장 안 돼도 동작 */ }
+  applyTheme(); renderStatic(); applyLabels(); applyView(false);
+});
 $('btn-zin').addEventListener('click', () => { state.zoom = clamp(state.zoom * 1.25, 0.4, 2.4); applyView(true); });
 $('btn-zout').addEventListener('click', () => { state.zoom = clamp(state.zoom / 1.25, 0.25, 2.4); applyView(true); });
 $('btn-rotl').addEventListener('click', () => { state.rot -= 45; applyView(true); });
@@ -422,6 +446,7 @@ $('sheet-body').addEventListener('click', (e) => {
   if (row) select(+row.dataset.n);
 });
 
+applyTheme();
 renderStatic();
 applyView(false);
 applyLabels();
