@@ -1,4 +1,4 @@
-import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, POIS, FLOORS, OUTDOOR } from './campus-data.js';
+import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR } from './campus-data.js';
 
 // ---------- geometry (same projection as the design canvas) ----------
 const C = Math.cos(50 * Math.PI / 180), S = Math.sin(50 * Math.PI / 180);
@@ -19,6 +19,7 @@ const ICON = {
   close: '<path d="M6 6l12 12M18 6L6 18"></path>',
 };
 const AED_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:13px;height:13px"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="#fff" stroke="none"></path><path d="M12.6 8.5l-2 3.2h2.2l-1.4 3" fill="none" stroke="#D93A3A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+const FIRE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" style="width:12px;height:12px;stroke:none"><path fill="#fff" d="M12.2 2.5c.6 3.3 4.8 5.2 4.8 10a5 5 0 0 1-10 0c0-2.3 1.1-3.8 2.3-4.9.1 1.7.9 2.8 2 3.2-.5-3.1-.1-5.9.9-8.3z"/></svg>';
 const svg = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICON[k]}</svg>`;
 const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -112,11 +113,15 @@ function renderStatic() {
     `<div class="bb amen" style="left:${X(px)}px;top:${Y(py)}px;--z:3px"><div class="in"><div class="mk" role="img" aria-label="${esc(label + ' · ' + where)}"><span class="ic" style="background:${k === 'store' ? '#1F8A5B' : '#9A5B34'}">${svg(k)}</span>${esc(label)}</div></div></div>`).join('');
   const aed = AEDS.map(([label, where, px, py]) =>
     `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px;--z:4px"><div class="in"><div class="mk aed" role="img" aria-label="자동심장충격기 · ${esc(label)}"><span class="ic">${AED_SVG}</span>AED</div></div></div>`).join('');
+  const smoke = SMOKING.map(([label, px, py]) =>
+    `<div class="smz" style="left:${X(px) - 16}px;top:${Y(py) - 16}px"></div>` +
+    `<div class="bb" style="left:${X(px)}px;top:${Y(py)}px;--z:3px"><div class="in"><div class="mk smk" role="img" aria-label="흡연구역 · 화재 위험 · ${esc(label)}"><span class="ic">${FIRE_SVG}</span>흡연구역</div></div></div>`).join('');
   const chips = buildings.map((b) =>
     `<div class="bb" style="left:${b.cx}px;top:${b.cy}px;--z:${b.z}px"><div class="in"><button type="button" class="chip${b.code ? '' : ' nocode'}" data-n="${b.n}" aria-label="${esc(b.name)} 정보 보기">` +
     (b.code ? `<span class="code mono" style="background:${b.base}">${esc(b.code)}</span>` : '') +
     `<span class="name">${esc(b.name)}</span></button><div class="tip"></div></div></div>`).join('');
-  $('layer-markers').innerHTML = pois + amen + aed + chips;
+  $('layer-markers').innerHTML = smoke + pois + amen + aed + chips;
+  scheduleDeclutter();
 }
 function renderBuildings() { $('layer-buildings').innerHTML = masses.map(massHTML).join(''); }
 
@@ -131,6 +136,7 @@ function applyView(animate) {
   plane.style.setProperty('--bill', `rotateZ(${-state.rot}deg) rotateX(${-state.tilt}deg) scale(${k})`);
   $('compass').style.transform = `rotate(${state.rot}deg)`;
   $('btn-tilt').textContent = flat ? '3D' : '2D';
+  scheduleDeclutter(animate ? 650 : 0);
 }
 function applyLabels() {
   document.querySelectorAll('.chip').forEach((el) => {
@@ -143,6 +149,65 @@ function applyLabels() {
   map.classList.toggle('no-amen', !state.amen);
   $('btn-amen').classList.toggle('on', state.amen);
   $('btn-amen').setAttribute('aria-pressed', state.amen);
+  scheduleDeclutter();
+}
+
+// ---------- label declutter: 화면에서 겹치는 이름표는 코드만 남기거나 숨김 ----------
+let dcRaf = 0, dcTimer = 0;
+function scheduleDeclutter(delay) {
+  cancelAnimationFrame(dcRaf); clearTimeout(dcTimer);
+  dcRaf = requestAnimationFrame(declutter);
+  if (delay) dcTimer = setTimeout(declutter, delay);
+}
+function declutter() {
+  const layer = $('layer-markers');
+  if (!layer) return;
+  const chips = [...layer.querySelectorAll('.chip')];
+  const mks = [...layer.querySelectorAll('.mk')];
+  chips.forEach((el) => { el.classList.remove('squeeze'); el.closest('.bb').classList.remove('hid'); });
+  mks.forEach((el) => { el.classList.remove('dot'); el.parentElement.style.translate = ''; el.closest('.bb').classList.remove('hid'); });
+  const placed = [];
+  const PAD = 3;
+  const hit = (r) => placed.some((q) => r.l < q.r && r.r > q.l && r.t < q.b && r.b > q.t);
+  const box = (rc) => ({ l: rc.left - PAD, r: rc.right + PAD, t: rc.top - PAD, b: rc.bottom + PAD });
+  // 정문·후문 표지판은 항상 우선
+  layer.querySelectorAll('.gate, .mk.aed').forEach((el) => { const rc = el.getBoundingClientRect(); if (rc.width) placed.push(box(rc)); });
+  const dotBox = (rc, dx = 0, dy = 0) => { const cx = (rc.left + rc.right) / 2 + dx, hw = rc.height / 2; return { l: cx - hw - PAD, r: cx + hw + PAD, t: rc.top + dy - PAD, b: rc.bottom + dy - (-PAD) }; };
+  const info = chips.map((el) => {
+    const n = +el.dataset.n, b = buildings.find((q) => q.n === n);
+    return { el, n, rc: el.getBoundingClientRect(), code: el.querySelector('.code'), pri: (state.sel === n ? 1e6 : 0) + (b.code ? 1e4 : 0) + b.z };
+  }).filter((o) => o.rc.width).sort((a, b) => b.pri - a.pri);
+  info.forEach(({ el, n, rc, code }) => {
+    const r = box(rc);
+    if (state.sel === n || !hit(r)) { placed.push(r); return; }
+    if (code && !el.classList.contains('compact')) {
+      const s = rc.width / el.offsetWidth, cw = (code.offsetWidth + 8) * s, cx = (rc.left + rc.right) / 2;
+      const rr = { l: cx - cw / 2 - PAD, r: cx + cw / 2 + PAD, t: r.t, b: r.b };
+      if (!hit(rr)) { el.classList.add('squeeze'); placed.push(rr); return; }
+    }
+    el.closest('.bb').classList.add('hid');
+  });
+  // 흡연구역(숨기지 않음): 글자 자리가 있으면 표시 → 없으면 아이콘만 → 그래도 겹치면 아이콘을 옆 빈자리로 살짝 이동
+  mks.filter((el) => el.classList.contains('smk')).map((el) => ({ el, rc: el.getBoundingClientRect() })).filter((o) => o.rc.width).forEach(({ el, rc }) => {
+    const r = box(rc);
+    if (!hit(r)) { placed.push(r); return; }
+    el.classList.add('dot');
+    const h = rc.height, sc = rc.height / el.offsetHeight;
+    const tries = [[0, 0], [-h - 4, 0], [h + 4, 0], [0, h + 4], [-h - 4, h + 4], [h + 4, h + 4], [0, -h - 4], [-2 * h - 8, 0], [2 * h + 8, 0]];
+    const best = tries.find(([dx, dy]) => !hit(dotBox(rc, dx, dy)));
+    if (!best) { el.closest('.bb').classList.add('hid'); return; }   // 자리가 없으면 바닥의 빗금 구역만 보임
+    if (best[0] || best[1]) el.parentElement.style.translate = `${best[0] / sc}px ${best[1] / sc}px`;
+    placed.push(dotBox(rc, best[0], best[1]));
+  });
+  // 편의점·카페: 겹치면 아이콘만, 그래도 겹치면 숨김
+  mks.filter((el) => el.classList.contains('amen') || el.closest('.amen')).map((el) => ({ el, rc: el.getBoundingClientRect() })).filter((o) => o.rc.width)
+    .forEach(({ el, rc }) => {
+      const r = box(rc);
+      if (!hit(r)) { placed.push(r); return; }
+      const ic = dotBox(rc);
+      if (!hit(ic)) { el.classList.add('dot'); placed.push(ic); return; }
+      el.closest('.bb').classList.add('hid');
+    });
 }
 
 // project a plane point to screen offset from stage centre (ignores perspective; good enough to centre)
@@ -204,7 +269,10 @@ function renderSheet() {
   const aed = `<section class="group"><h3><i style="background:#D93A3A"></i>자동심장충격기 (AED)</h3>` + AEDS.map(([label, where]) =>
     `<div class="row" style="cursor:default"><span class="badge" style="background:#D93A3A">${AED_SVG}</span><span class="nm" style="font-weight:600">${esc(label)}</span><span class="sub">${esc(where)}</span></div>`).join('') +
     '<p class="note">국가 AED 등록 정보 기준이라 미등록 기기는 표시되지 않아요.</p></section>';
-  $('directory').innerHTML = groups + amen + aed;
+  const smk = `<section class="group"><h3><i style="background:#E0531F"></i>흡연구역 · 화재 위험구역</h3>` + SMOKING.map(([label]) =>
+    `<div class="row" style="cursor:default"><span class="badge" style="background:#E0531F">${FIRE_SVG}</span><span class="nm">흡연구역</span><span class="sub">${esc(label)}</span></div>`).join('') +
+    '<p class="note">흡연구역 주변은 화재 위험구역이에요. 꽁초는 반드시 끄고 재떨이에 버려 주세요.</p></section>';
+  $('directory').innerHTML = groups + amen + aed + smk;
 }
 
 // ---------- search ----------
