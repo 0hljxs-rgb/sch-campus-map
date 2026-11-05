@@ -1,6 +1,6 @@
 // 오프라인 동작용 서비스 워커: 앱 파일을 모두 저장해 두고 인터넷 없이도 열리게 해요.
 // 앱 파일을 고치면 VERSION 숫자를 올려야 사용자 기기에 새 버전이 반영돼요.
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = 'sch-campus-map-' + VERSION;
 const FILES = [
   './', 'index.html', 'styles.css', 'app.js', 'campus-data.js', 'assets/ground.svg', 'privacy.html',

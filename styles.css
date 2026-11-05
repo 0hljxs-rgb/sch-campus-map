@@ -130,6 +130,8 @@ svg { display: block; }
 .ctl { width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; font-weight: 600; }
 .ctl svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ctl.on { background: var(--navy); color: #fff; }
+#controls .sep { display: block; height: 1px; margin: 1px 8px; background: rgba(16, 26, 48, 0.1); }
+.ctl:active { background: rgba(16, 26, 48, 0.08); }
 #compass { transition: transform 0.4s ease; }
 #compass .n { fill: #D93A3A; stroke: none; }
 #compass .s { fill: #B7BFCB; stroke: none; }

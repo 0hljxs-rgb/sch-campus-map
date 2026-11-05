@@ -365,6 +365,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // ---------- wiring ----------
 $('btn-reset').addEventListener('click', () => { Object.assign(state, HOME); applyView(true); });
+$('btn-zin').addEventListener('click', () => { state.zoom = clamp(state.zoom * 1.25, 0.4, 2.4); applyView(true); });
+$('btn-zout').addEventListener('click', () => { state.zoom = clamp(state.zoom / 1.25, 0.4, 2.4); applyView(true); });
+$('btn-rotl').addEventListener('click', () => { state.rot -= 45; applyView(true); });
+$('btn-rotr').addEventListener('click', () => { state.rot += 45; applyView(true); });
 $('btn-tilt').addEventListener('click', () => { state.tilt = state.tilt ? 0 : 52; applyView(true); });
 $('btn-names').addEventListener('click', () => { state.names = !state.names; applyLabels(); });
 $('btn-amen').addEventListener('click', () => { state.amen = !state.amen; applyLabels(); });

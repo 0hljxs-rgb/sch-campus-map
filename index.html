@@ -41,6 +41,20 @@
   </header>
 
   <nav id="controls" aria-label="지도 조작">
+    <button type="button" id="btn-zin" class="ctl" aria-label="확대">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+    <button type="button" id="btn-zout" class="ctl" aria-label="축소">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg>
+    </button>
+    <i class="sep" aria-hidden="true"></i>
+    <button type="button" id="btn-rotl" class="ctl" aria-label="왼쪽으로 45도 회전">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7"></path><path d="M4 3v4h4"></path></svg>
+    </button>
+    <button type="button" id="btn-rotr" class="ctl" aria-label="오른쪽으로 45도 회전">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 3v4h-4"></path></svg>
+    </button>
+    <i class="sep" aria-hidden="true"></i>
     <button type="button" id="btn-reset" class="ctl" aria-label="처음 시점으로">
       <svg viewBox="0 0 24 24" aria-hidden="true" id="compass"><path d="M12 3l3.5 9H8.5z" class="n"></path><path d="M12 21l-3.5-9h7z" class="s"></path></svg>
     </button>
