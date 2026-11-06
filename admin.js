@@ -19,6 +19,16 @@ const PLACES = [
   { label: '공유캠퍼스 정문', x: 470, y: 300 }, { label: '통학버스 승강장', x: 795, y: 1170 },
 ].sort((a, b) => a.label.localeCompare(b.label, 'ko'));
 
+// 확인 팝업(confirm) 대신: 버튼을 한 번 더 누르면 실행 (앱 안 브라우저·일부 웹앱에서는 팝업이 막혀서)
+function armed(btn, msg) {
+  if (btn.dataset.armed === '1') { delete btn.dataset.armed; btn.textContent = btn.dataset.label; return true; }
+  btn.dataset.label = btn.textContent;
+  btn.dataset.armed = '1';
+  btn.textContent = msg;
+  setTimeout(() => { if (btn.dataset.armed === '1') { delete btn.dataset.armed; btn.textContent = btn.dataset.label; } }, 5000);
+  return false;
+}
+
 let toastT = 0;
 function toast(m) { const t = $('toast'); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3500); }
 
@@ -119,7 +129,7 @@ main.addEventListener('submit', async (e) => {
     const fd = new FormData(f), pi = fd.get('place'), p = pi === '' ? null : PLACES[+pi];
     const title = String(fd.get('title')).trim();
     if (!title) return fail('제목을 입력해 주세요');
-    if (!confirm(`모든 사용자에게 긴급 공지를 띄울까요?\n\n${title}`)) { btn.disabled = false; return; }
+    if (!armed(btn, '⚠️ 한 번 더 누르면 모든 사용자에게 공지가 떠요')) { btn.disabled = false; return; }
     const { error } = await sb.rpc('publish_alert', {
       p_incident: f.dataset.inc ? +f.dataset.inc : null, p_title: title, p_body: String(fd.get('body') || ''),
       p_kind: fd.get('kind'), p_place: p ? p.label : null, p_x: p ? p.x : null, p_y: p ? p.y : null,
@@ -135,10 +145,10 @@ main.addEventListener('click', async (e) => {
   if (t.dataset.a === 'compose') { compose = id === 'new' ? 'new' : +id; render(); }
   else if (t.dataset.a === 'cancel') { compose = null; render(); }
   else if (t.dataset.a === 'dismiss') {
-    if (!confirm('이 제보를 오보로 처리할까요? 지도에서 사라져요.')) return;
+    if (!armed(t, '한 번 더 누르면 오보 처리돼요')) return;
     const { error } = await sb.rpc('dismiss_incident', { p_id: +id }); if (error) toast(niceError(error)); else { toast('처리했어요'); load(); }
   } else if (t.dataset.a === 'end') {
-    if (!confirm('이 긴급 공지를 내릴까요?')) return;
+    if (!armed(t, '한 번 더 누르면 공지가 내려가요')) return;
     const { error } = await sb.rpc('end_alert', { p_id: +id }); if (error) toast(niceError(error)); else { toast('공지를 내렸어요'); load(); }
   }
 });
