@@ -454,6 +454,25 @@ renderSheet();
 fitHome();
 requestAnimationFrame(fitHome);
 
+// ---------- 긴급 제보·공지 모듈과 연결 ----------
+window.campusMap = {
+  X, Y,
+  // 제보 장소 목록: 건물 + 주요 야외 장소 (지도 일러스트 좌표)
+  places: [
+    ...buildings.map((b) => ({ label: b.name, ix: b.cx + 357, iy: b.cy * C + 270 })),
+    { label: '피닉스광장', ix: 690, iy: 1010 }, { label: '차 없는 거리', ix: 1080, iy: 915 },
+    { label: '정문(서문)', ix: 1533, iy: 985 }, { label: '후문(향설동문)', ix: 440, iy: 1125 },
+    { label: '공유캠퍼스 정문', ix: 470, iy: 300 }, { label: '통학버스 승강장', ix: 795, iy: 1170 },
+  ].sort((a, b) => a.label.localeCompare(b.label, 'ko')),
+  focus(ix, iy) {
+    if (state.zoom < 0.8) state.zoom = 0.8;
+    const p = project(X(ix), Y(iy));
+    state.panX = -p.x; state.panY = -p.y - (small ? 120 : 0);
+    applyView(true);
+  },
+};
+import('./alert.js').catch(() => { /* 오프라인이면 제보 기능 없이 지도만 */ });
+
 // 웹앱(홈 화면 추가)으로 열렸을 때 오프라인 동작을 위해 서비스 워커 등록 (네이티브 앱 안에서는 필요 없음)
 if ('serviceWorker' in navigator && !window.Capacitor && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
