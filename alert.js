@@ -192,25 +192,45 @@ fab.addEventListener('click', () => {
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modal.hidden) close(); });
 
 // ---------- 지도 위 표시 ----------
+// 3D 지도 안에는 위치 기준점(보이지 않음)만 두고, 실제 표시는 지도 위 평면 층에 그려서 건물에 가려지지 않게 함
+const pins = document.createElement('div');
+pins.id = 'alert-pins';
+$('map').appendChild(pins);
+let pinItems = [];
 function renderLayer() {
-  const ring = (x, y, cls) => `<div class="alring ${cls}" style="left:${cm.X(x) - 22}px;top:${cm.Y(y) - 22}px"></div>`;
-  const al = alerts.filter((a) => a.x != null).map((a) => {
-    const k = KINDS[a.kind] || KINDS.other;
-    return ring(a.x, a.y, 'red') + `<div class="bb" style="left:${cm.X(a.x)}px;top:${cm.Y(a.y)}px;--z:8px"><div class="in"><button type="button" class="alm red" data-alert="${a.id}" style="--k:${k.color}">${k.emoji} ${esc(a.title)}</button><div class="stem"></div></div></div>`;
-  });
-  const inc = incidents.filter((q) => q.status === 'open' || q.status === 'pending').map((q) => {
-    const k = KINDS[q.kind] || KINDS.other;
-    return ring(q.x, q.y, 'amber') + `<div class="bb" style="left:${cm.X(q.x)}px;top:${cm.Y(q.y)}px;--z:7px"><div class="in"><button type="button" class="alm inc" data-inc="${q.id}" style="--k:${k.color}">${k.emoji} ${q.status === 'pending' ? '검토 중' : '확인 중'} · ${q.agree}명</button><div class="stem"></div></div></div>`;
-  });
-  layer.innerHTML = al.join('') + inc.join('');
+  const items = [
+    ...alerts.filter((a) => a.x != null).map((a) => ({ key: 'a' + a.id, x: a.x, y: a.y, cls: 'red', k: KINDS[a.kind] || KINDS.other,
+      html: (k) => `<button type="button" class="alm red" data-alert="${a.id}" style="--k:${k.color}">${k.emoji} ${esc(a.title)}</button>` })),
+    ...incidents.filter((q) => q.status === 'open' || q.status === 'pending').map((q) => ({ key: 'i' + q.id, x: q.x, y: q.y, cls: 'amber', k: KINDS[q.kind] || KINDS.other,
+      html: (k) => `<button type="button" class="alm inc" data-inc="${q.id}" style="--k:${k.color}">${k.emoji} ${q.status === 'pending' ? '검토 중' : '확인 중'} · ${q.agree}명</button>` })),
+  ];
+  layer.innerHTML = items.map((it) => `<div class="alanc" data-k="${it.key}" style="left:${cm.X(it.x)}px;top:${cm.Y(it.y)}px"></div>`).join('');
+  pins.innerHTML = items.map((it) => `<div class="alpin ${it.cls}" data-k="${it.key}"><div class="alring ${it.cls}"></div><div class="alstem"></div>${it.html(it.k)}</div>`).join('');
+  pinItems = items.map((it) => ({ anc: layer.querySelector(`[data-k="${it.key}"]`), pin: pins.querySelector(`[data-k="${it.key}"]`) }));
+  if (pinItems.length) startTrack();
 }
-layer.addEventListener('click', (e) => {
+let tracking = false;
+function startTrack() {
+  if (tracking) return;
+  tracking = true;
+  const tick = () => {
+    if (!pinItems.length) { tracking = false; return; }
+    const m = $('map').getBoundingClientRect();
+    for (const { anc, pin } of pinItems) {
+      const r = anc.getBoundingClientRect();
+      pin.style.transform = `translate(${r.left - m.left}px, ${r.top - m.top}px)`;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+pins.addEventListener('click', (e) => {
   const a = e.target.closest('[data-alert]'), q = e.target.closest('[data-inc]');
   if (a) { const al = alerts.find((x) => x.id === +a.dataset.alert); if (al) { banner.classList.remove('min'); cm.focus(al.x, al.y); } }
   if (q) { const id = +q.dataset.inc; needLogin(() => open('vote', { id })); }
 });
 // 지도 끌기(드래그) 도중 눌림 방지
-layer.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) e.stopPropagation(); });
+pins.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) e.stopPropagation(); });
 
 // ---------- 긴급 공지 배너 ----------
 let seen = new Set();
@@ -294,4 +314,6 @@ async function start() {
   setInterval(() => { if (!document.hidden) { loadAlerts(); loadIncidents(); } }, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadAlerts(); loadIncidents(); } });
 }
+// 로컬 개발 화면에서만: 서버 없이 표시 확인용
+if (location.hostname === 'localhost') window.__alertDebug = { show(list, inc = []) { alerts = list; incidents = inc; renderBanner(); renderLayer(); } };
 start();

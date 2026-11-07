@@ -272,10 +272,16 @@ svg { display: block; }
 .alm { display: flex; align-items: center; gap: 4px; padding: 4px 9px; border: 0; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; cursor: pointer; }
 .alm.red { background: var(--k); color: #fff; box-shadow: 0 6px 16px rgba(180, 30, 30, 0.4), 0 0 0 2px #fff; }
 .alm.inc { background: var(--panel); color: var(--k); box-shadow: 0 4px 12px rgba(16, 26, 48, 0.2), inset 0 0 0 1.5px var(--k); }
-.alring { position: absolute; width: 44px; height: 44px; border-radius: 50%; transform: translateZ(2px); pointer-events: none; }
+.alanc { position: absolute; width: 0; height: 0; transform: translateZ(2px); pointer-events: none; }
+#alert-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.alpin { position: absolute; left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+.alpin .alm { position: absolute; left: 0; bottom: 34px; transform: translateX(-50%); pointer-events: auto; }
+.alstem { position: absolute; left: -1px; bottom: 0; width: 2px; height: 34px; background: var(--ink); opacity: 0.55; }
+.alpin.red .alstem { background: #D93A3A; opacity: 0.9; }
+.alpin .alring { position: absolute; left: -16px; top: -10px; width: 32px; height: 20px; border-radius: 50%; pointer-events: none; }
 .alring.red { background: rgba(217, 58, 58, 0.25); border: 2px solid rgba(217, 58, 58, 0.8); animation: al-pulse 1.6s ease-out infinite; }
 .alring.amber { background: rgba(224, 138, 30, 0.18); border: 2px dashed rgba(224, 138, 30, 0.85); }
-@keyframes al-pulse { 0% { transform: translateZ(2px) scale(0.6); opacity: 1; } 100% { transform: translateZ(2px) scale(1.8); opacity: 0; } }
+@keyframes al-pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(2); opacity: 0; } }
 
 /* 제보 창 */
 #rp { position: fixed; inset: 0; z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
