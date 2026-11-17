@@ -1,4 +1,4 @@
-import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS, PHOTO_CREDIT } from './campus-data.js';
+import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS, PHOTO_CREDIT, OFFICIAL } from './campus-data.js';
 
 // ---------- geometry (same projection as the design canvas) ----------
 const C = Math.cos(50 * Math.PI / 180), S = Math.sin(50 * Math.PI / 180);
@@ -68,6 +68,7 @@ FLAT_PLACES.forEach(([n, name, px, py]) => buildings.push({ n, name, c: 'p', bas
 buildings.forEach((b) => {
   const f = FLOORS[b.n];
   b.floors = f || null;
+  b.label = OFFICIAL[b.n] ? `${b.name} (${OFFICIAL[b.n]})` : b.name;
   b.short = f ? (f[0] ? 'B' + f[0] + ' · ' : '') + f[1] + 'F' : '야외';
   b.amen = AMENITIES.filter((a) => a[2].startsWith(b.name.replace('관', '').slice(0, 3)) || a[2].includes(b.name));
 });
@@ -129,7 +130,7 @@ function renderStatic() {
   const chips = buildings.map((b) =>
     `<div class="bb" style="left:${b.cx}px;top:${b.cy}px;--z:${b.z}px"><div class="in"><button type="button" class="chip${b.code ? '' : ' nocode'}" data-n="${b.n}" aria-label="${esc(b.name)} 정보 보기">` +
     (b.code ? `<span class="code mono" style="background:${b.base}">${esc(b.code)}</span>` : '') +
-    `<span class="name">${esc(b.name)}</span>` +
+    `<span class="name">${esc(b.label)}</span>` +
     (AEDS.some((a) => a[0] === b.name) ? `<span class="aedb" role="img" aria-label="자동심장충격기(AED) 있음">${AED_SVG}AED</span>` : '') +
     `</button><div class="tip"></div></div></div>`).join('');
   $('layer-markers').innerHTML = smoke + pois + amen + chips;
@@ -270,7 +271,7 @@ function renderSheet() {
       ? `<button type="button" class="photo" data-act="photo" style="background-image:url(assets/photos/${b.n}.jpg)" aria-label="${esc(b.name)} 사진 크게 보기"><small>📷 ${esc(PHOTO_CREDIT[b.n] || '사진: 순천향대학교')}</small></button>`
       : `<div class="photo none"><span>📷 건물 사진 준비 중</span></div>`;
     return `<article class="card">${photo}<div class="band" style="background:${b.base}"></div><div class="body">
-      <div class="head"><div><div class="meta">${b.code ? `<span class="code mono">${esc(b.code)}</span>` : ''}${CAT_LABEL[b.c]}</div><h2>${esc(b.name)}</h2></div>
+      <div class="head"><div><div class="meta">${b.code ? `<span class="code mono">${esc(b.code)}</span>` : ''}${CAT_LABEL[b.c]}</div><h2>${esc(b.label)}</h2></div>
       <button type="button" class="close" data-act="clear" aria-label="선택 해제">${svg('close')}</button></div>
       ${f ? `<div class="tiles"><div class="tile"><small>지상</small><b>${f[1]}<em>층</em></b></div><div class="tile"><small>지하</small><b>${f[0]}<em>층</em></b></div></div>`
           : `<div class="tile" style="font-size:15px;font-weight:600">${esc(OUTDOOR[b.n] || '정보 없음')}</div>`}
@@ -282,7 +283,7 @@ function renderSheet() {
   const groups = ['a', 's', 'd', 'p'].map((c) => {
     const items = buildings.filter((q) => q.c === c);
     return `<section class="group"><h3><i style="background:${CATS[c]}"></i>${CAT_LABEL[c]}</h3>` + items.map((q) =>
-      `<button type="button" class="row${state.sel === q.n ? ' on' : ''}" data-n="${q.n}"><span class="badge mono" style="background:${q.code ? (state.sel === q.n ? ACCENT : q.base) : 'var(--soft)'};color:${q.code ? (state.sel === q.n ? INK : '#fff') : 'var(--faint)'}">${esc(q.code || '·')}</span><span class="nm">${esc(q.name)}</span><span class="sub mono">${q.short}</span></button>`).join('') + '</section>';
+      `<button type="button" class="row${state.sel === q.n ? ' on' : ''}" data-n="${q.n}"><span class="badge mono" style="background:${q.code ? (state.sel === q.n ? ACCENT : q.base) : 'var(--soft)'};color:${q.code ? (state.sel === q.n ? INK : '#fff') : 'var(--faint)'}">${esc(q.code || '·')}</span><span class="nm">${esc(q.label)}</span><span class="sub mono">${q.short}</span></button>`).join('') + '</section>';
   }).join('');
   const amen = `<section class="group"><h3><i style="background:${STORE_BLUE}"></i>편의점(GS25) · 카페</h3>` + AMENITIES.map(([k, label, where]) =>
     `<div class="row" style="cursor:default"><span class="badge" style="background:${k === 'store' ? STORE_BLUE : CAFE_BROWN}">${svg(k)}</span><span class="nm">${esc(label)}</span><span class="sub">${esc(where)}</span></div>`).join('') + '</section>';
@@ -301,10 +302,10 @@ function runSearch() {
   $('search-clear').hidden = !q;
   const box = $('results');
   if (!q) { box.hidden = true; box.innerHTML = ''; return; }
-  const hits = buildings.filter((b) => b.name.toLowerCase().includes(q) || (b.code && b.code.toLowerCase() === q) || (b.code && q.startsWith(b.code.toLowerCase()) && /^[a-z]*\d/.test(q)));
+  const hits = buildings.filter((b) => b.name.toLowerCase().includes(q) || (OFFICIAL[b.n] || '').toLowerCase() === q || (b.code && b.code.toLowerCase() === q) || (b.code && q.startsWith(b.code.toLowerCase()) && /^[a-z]*\d/.test(q)));
   box.hidden = false;
   box.innerHTML = hits.length ? hits.slice(0, 12).map((b) =>
-    `<li><button type="button" data-n="${b.n}"><span class="badge mono" style="min-width:36px;height:26px;padding:0 6px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;background:${b.code ? b.base : 'var(--soft)'};color:${b.code ? '#fff' : 'var(--faint)'}">${esc(b.code || '·')}</span><span style="flex:1;font-size:15px">${esc(b.name)}</span><span class="mono" style="font-size:12.5px;color:var(--faint)">${b.short}</span></button></li>`).join('')
+    `<li><button type="button" data-n="${b.n}"><span class="badge mono" style="min-width:36px;height:26px;padding:0 6px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:600;background:${b.code ? b.base : 'var(--soft)'};color:${b.code ? '#fff' : 'var(--faint)'}">${esc(b.code || '·')}</span><span style="flex:1;font-size:15px">${esc(b.label)}</span><span class="mono" style="font-size:12.5px;color:var(--faint)">${b.short}</span></button></li>`).join('')
     : '<li class="empty">일치하는 건물이 없어요. 건물 이름이나 강의실 코드(예: U, 9, ML)로 찾아보세요.</li>';
 }
 
