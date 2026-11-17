@@ -117,7 +117,18 @@ function renderStatic() {
     return `<div class="tsh" style="left:${x - sz / 2 + 4}px;top:${y - sz / 4 + 3}px;width:${sz * 1.1}px;height:${sz / 2}px"></div>` +
       `<div class="bb tree" style="left:${x}px;top:${y}px"><div class="trunk"></div><div class="crown" style="left:${-sz / 2}px;width:${sz}px;height:${ch}px;border-radius:${shape};background:radial-gradient(circle at 35% 30%, ${g[0]} 0%, ${g[1]} 85%)"></div></div>`;
   }).join('');
-  $('roads').innerHTML = ROADS.map((w) => `<polyline points="${w.map((q) => q.join(',')).join(' ')}"/>`).join('');
+  $('roads').innerHTML = (() => {
+    // 매끄럽게: 이동평균 → 단순화 → 부드러운 곡선(path)
+    const smooth = (w) => w.map((p, i) => { let x = 0, y = 0, c = 0; for (let j = Math.max(0, i - 4); j <= Math.min(w.length - 1, i + 4); j++) { x += w[j][0]; y += w[j][1]; c++; } return [x / c, y / c]; });
+    const simplify = (w, tol) => { if (w.length < 3) return w; const [a, b] = [w[0], w[w.length - 1]]; let dm = 0, k = 0;
+      for (let i = 1; i < w.length - 1; i++) { const d = Math.abs((b[0] - a[0]) * (a[1] - w[i][1]) - (a[0] - w[i][0]) * (b[1] - a[1])) / (Math.hypot(b[0] - a[0], b[1] - a[1]) || 1); if (d > dm) { dm = d; k = i; } }
+      return dm > tol ? [...simplify(w.slice(0, k + 1), tol).slice(0, -1), ...simplify(w.slice(k), tol)] : [a, b]; };
+    const curve = (w) => { let d = `M${w[0][0].toFixed(1)},${w[0][1].toFixed(1)}`;
+      for (let i = 1; i < w.length - 1; i++) { const m = [(w[i][0] + w[i + 1][0]) / 2, (w[i][1] + w[i + 1][1]) / 2]; d += ` Q${w[i][0].toFixed(1)},${w[i][1].toFixed(1)} ${m[0].toFixed(1)},${m[1].toFixed(1)}`; }
+      const l = w[w.length - 1]; return d + ` L${l[0].toFixed(1)},${l[1].toFixed(1)}`; };
+    const ds = ROADS.filter((w) => w.length > 3).map((w) => curve(simplify(smooth(smooth(w)), 2.5)));
+    return `<g class="r-edge">${ds.map((d) => `<path d="${d}"/>`).join('')}</g><g class="r-base">${ds.map((d) => `<path d="${d}"/>`).join('')}</g><g class="r-line">${ds.map((d) => `<path d="${d}"/>`).join('')}</g>`;
+  })();
   renderBuildings();
   // markers
   const pois = POIS.map(([px, py, k]) => k === 'bus'
