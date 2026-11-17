@@ -352,3 +352,33 @@ svg { display: block; }
 @media (prefers-reduced-motion: reduce) {
   #plane.anim, #plane.anim .bb, #sheet { transition: none; }
 }
+
+/* ---------- 건물 사진·엘리베이터 ---------- */
+.card .photo { display: block; width: 100%; height: 150px; border: 0; padding: 0; background: #2A3346 center/cover no-repeat; cursor: zoom-in; }
+.card .photo.none { height: 64px; display: flex; align-items: center; justify-content: center; cursor: default; color: #A9B3C4; font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.05); }
+.tile.elev { margin-top: -4px; display: flex; align-items: center; justify-content: space-between; }
+.tile.elev b { font-size: 15px; } .tile.elev b.yes { color: #6FD3A0; } .tile.elev b.no { color: #FF8A8A; } .tile.elev b:not(.yes):not(.no) { color: #A9B3C4; }
+.photo-view { position: fixed; inset: 0; z-index: 60; background: rgba(8,12,20,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
+.photo-view img { max-width: 94vw; max-height: 80dvh; border-radius: 12px; }
+.photo-view span { color: #cfd6e2; font-size: 13px; }
+
+/* ---------- 내 위치·공유·주차 핀 ---------- */
+#user-pins { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.upin { position: absolute; left: 0; top: 0; width: 0; height: 0; will-change: transform; }
+.me-dot { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; background: #1C6ED8; border: 3px solid #fff; box-shadow: 0 0 0 8px rgba(28,110,216,0.22), 0 3px 8px rgba(0,0,0,0.3); }
+.sh-pin { position: absolute; left: 0; bottom: 18px; transform: translateX(-50%); white-space: nowrap; padding: 7px 11px; border-radius: 10px; background: #7A56C9; color: #fff; font-size: 13px; font-weight: 700; box-shadow: 0 8px 18px rgba(0,0,0,0.25); }
+.sh-stem { position: absolute; left: -1px; bottom: 0; width: 2px; height: 18px; background: #7A56C9; }
+.pk { position: absolute; left: 0; bottom: 0; transform: translateX(-50%); pointer-events: auto; display: flex; align-items: center; gap: 6px; white-space: nowrap; padding: 4px 10px 4px 4px; border: 0; border-radius: 999px; background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; font-weight: 600; box-shadow: 0 6px 16px rgba(16,26,48,0.22); cursor: pointer; }
+.pk i { width: 20px; height: 20px; border-radius: 6px; color: #fff; font-style: normal; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+#xp[hidden] { display: none; }
+#xp { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+#xp .rp-back { position: absolute; inset: 0; background: rgba(8,12,20,0.45); }
+#xp .rp-card { position: relative; width: min(480px, 100%); max-height: 80dvh; overflow: auto; margin: 0 0 env(safe-area-inset-bottom); padding: 18px 16px 22px; border-radius: 20px 20px 0 0; background: var(--panel); color: var(--ink); display: grid; gap: 10px; }
+.xp-list { display: grid; gap: 6px; }
+.xp-list button, .pk-btns button { height: 44px; border: 1px solid var(--line, #E3E7ED); border-radius: 12px; background: var(--soft); color: var(--ink); font: inherit; font-size: 14.5px; font-weight: 600; text-align: left; padding: 0 14px; cursor: pointer; }
+.xp-list .xp-gps { background: #1C6ED8; color: #fff; border: 0; text-align: center; }
+.xp-or { margin: 4px 2px 0; font-size: 12.5px; color: var(--muted, #5B6676); }
+.pk-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pk-btns button { text-align: center; background: var(--c); color: #fff; border: 0; }
+.xp-link { width: 100%; min-height: 70px; font: inherit; font-size: 12px; border-radius: 10px; padding: 8px; }
+#xp select { height: 44px; border-radius: 10px; font: inherit; font-size: 15px; padding: 0 10px; }

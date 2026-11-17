@@ -315,5 +315,6 @@ async function start() {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadAlerts(); loadIncidents(); } });
 }
 // 로컬 개발 화면에서만: 서버 없이 표시 확인용
+cm.needLogin = needLogin; cm.toast = showToast; cm.client = () => sb;
 if (location.hostname === 'localhost') window.__alertDebug = { show(list, inc = []) { alerts = list; incidents = inc; renderBanner(); renderLayer(); } };
 start();

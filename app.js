@@ -1,4 +1,4 @@
-import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR } from './campus-data.js';
+import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS } from './campus-data.js';
 
 // ---------- geometry (same projection as the design canvas) ----------
 const C = Math.cos(50 * Math.PI / 180), S = Math.sin(50 * Math.PI / 180);
@@ -265,11 +265,16 @@ function renderSheet() {
     const f = b.floors;
     const here = AMENITIES.filter((a) => a[2].replace(/\s.*$/, '') === b.name || a[2].startsWith(b.name));
     const aed = AEDS.filter((a) => a[0] === b.name);
-    return `<article class="card"><div class="band" style="background:${b.base}"></div><div class="body">
+    const ev = ELEVATORS[b.n];
+    const photo = PHOTOS.includes(b.n)
+      ? `<button type="button" class="photo" data-act="photo" style="background-image:url(assets/photos/${b.n}.jpg)" aria-label="${esc(b.name)} 사진 크게 보기"></button>`
+      : `<div class="photo none"><span>📷 건물 사진 준비 중</span></div>`;
+    return `<article class="card">${photo}<div class="band" style="background:${b.base}"></div><div class="body">
       <div class="head"><div><div class="meta">${b.code ? `<span class="code mono">${esc(b.code)}</span>` : ''}${CAT_LABEL[b.c]}</div><h2>${esc(b.name)}</h2></div>
       <button type="button" class="close" data-act="clear" aria-label="선택 해제">${svg('close')}</button></div>
       ${f ? `<div class="tiles"><div class="tile"><small>지상</small><b>${f[1]}<em>층</em></b></div><div class="tile"><small>지하</small><b>${f[0]}<em>층</em></b></div></div>`
           : `<div class="tile" style="font-size:15px;font-weight:600">${esc(OUTDOOR[b.n] || '정보 없음')}</div>`}
+      ${f ? `<div class="tile elev"><small>엘리베이터</small><b class="${ev === true ? 'yes' : ev === false ? 'no' : ''}">${ev === true ? '있음' : ev === false ? '없음' : '확인 중'}</b></div>` : ''}
       ${(here.length || aed.length) ? `<div class="here">${here.map((a) => `<span><i style="background:${a[0] === 'store' ? STORE_BLUE : CAFE_BROWN}"></i>${esc(a[1])} · ${esc(a[2].split(' ').slice(1).join(' ') || '')}</span>`).join('')}${aed.map(() => '<span><i style="background:#D93A3A"></i>AED</span>').join('')}</div>` : ''}
     </div></article>`;
   })() : `<div class="hint"><div class="ico">${svg('building')}</div><div><b>건물을 선택하세요</b><span>지도 이름표를 누르거나 목록을 펼쳐 보세요.</span></div></div>`;
@@ -442,6 +447,11 @@ $('results').addEventListener('click', (e) => {
 });
 $('sheet-body').addEventListener('click', (e) => {
   if (e.target.closest('[data-act="clear"]')) { select(state.sel, { focus: false }); return; }
+  if (e.target.closest('[data-act="photo"]')) {
+    const v = document.createElement('div'); v.className = 'photo-view';
+    v.innerHTML = `<img src="assets/photos/${state.sel}.jpg" alt=""><span>눌러서 닫기</span>`;
+    v.addEventListener('click', () => v.remove()); document.body.appendChild(v); return;
+  }
   const row = e.target.closest('.row[data-n]');
   if (row) select(+row.dataset.n);
 });
@@ -471,7 +481,7 @@ window.campusMap = {
     applyView(true);
   },
 };
-import('./alert.js').catch(() => { /* 오프라인이면 제보 기능 없이 지도만 */ });
+import('./alert.js').catch(() => { /* 오프라인이면 제보 기능 없이 지도만 */ }).finally(() => import('./extras.js'));
 
 // 웹앱(홈 화면 추가)으로 열렸을 때 오프라인 동작을 위해 서비스 워커 등록 (네이티브 앱 안에서는 필요 없음)
 if ('serviceWorker' in navigator && !window.Capacitor && (location.protocol === 'https:' || location.hostname === 'localhost')) {
