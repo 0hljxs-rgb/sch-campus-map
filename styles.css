@@ -384,3 +384,7 @@ svg { display: block; }
 #xp select { height: 44px; border-radius: 10px; font: inherit; font-size: 15px; padding: 0 10px; }
 .card .photo { position: relative; }
 .card .photo small { position: absolute; right: 6px; bottom: 6px; padding: 2px 6px; border-radius: 6px; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; font-weight: 500; }
+/* 차도 (OpenStreetMap) */
+#roads { position: absolute; left: 0; top: 0; width: 1286px; height: 1595px; pointer-events: none; overflow: visible; }
+#roads polyline { fill: none; stroke: #8D9097; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: 0.9; }
+:root[data-theme="dark"] #roads polyline { stroke: #6B717C; }
