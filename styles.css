@@ -384,18 +384,14 @@ svg { display: block; }
 #xp select { height: 44px; border-radius: 10px; font: inherit; font-size: 15px; padding: 0 10px; }
 .card .photo { position: relative; }
 .card .photo small { position: absolute; right: 6px; bottom: 6px; padding: 2px 6px; border-radius: 6px; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; font-weight: 500; }
-/* 차도 (OpenStreetMap) — 아스팔트 + 흰 중앙 점선 */
-#roads { position: absolute; left: 0; top: 0; width: 1286px; height: 1595px; pointer-events: none; overflow: visible; }
-#roads path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-#roads .r-edge path { stroke: #FFFFFF; stroke-width: 14; opacity: 0.85; }
-#roads .r-base path { stroke: #4B5059; stroke-width: 11; }
-#roads .r-line path { stroke: #F4F1E8; stroke-width: 1.3; stroke-dasharray: 7 6; stroke-linecap: butt; }
-:root[data-theme="dark"] #roads .r-edge path { stroke: #2A2F38; }
-:root[data-theme="dark"] #roads .r-base path { stroke: #6E7480; }
-:root[data-theme="dark"] #roads .r-line path { stroke: #D9DCE2; }
+/* 차도 (OpenStreetMap 기준으로 그림 지도의 도로 면을 골라 칠함) */
+#plane > #roads { position: absolute; left: 0; top: 0; width: 1286px; height: 1595px; pointer-events: none; background: #8F949D;
+  -webkit-mask: url(assets/roads-mask.png) 0 0 / 100% 100% no-repeat; mask: url(assets/roads-mask.png) 0 0 / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 0.7px #fff) drop-shadow(0 0 0.7px #fff); }
+:root[data-theme="dark"] #roads { background: #7A808B; filter: drop-shadow(0 0 0.7px #1E232B); }
 /* 범례 */
 #legend { position: absolute; left: 12px; bottom: calc(var(--sheet-peek, 120px) + 12px); z-index: 3; display: flex; gap: 10px; padding: 6px 10px; border-radius: 10px; background: var(--panel); box-shadow: 0 4px 14px rgba(16,26,48,0.16); font-size: 11.5px; font-weight: 600; color: var(--ink); pointer-events: none; }
 #legend span { display: flex; align-items: center; gap: 5px; }
-#legend i.road { width: 22px; height: 7px; border-radius: 4px; background: #4B5059 linear-gradient(90deg, transparent 2px, #F4F1E8 2px, #F4F1E8 7px, transparent 7px, transparent 13px, #F4F1E8 13px, #F4F1E8 18px, transparent 18px) center/100% 1.3px no-repeat; }
+#legend i.road { width: 22px; height: 9px; border-radius: 3px; background: #8F949D; }
 #legend i.walk { width: 22px; height: 7px; border-radius: 4px; background: #C3BEB5; }
 :root[data-theme="dark"] #legend i.walk { background: #4F5663; }
