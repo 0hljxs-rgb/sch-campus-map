@@ -382,3 +382,5 @@ svg { display: block; }
 .pk-btns button { text-align: center; background: var(--c); color: #fff; border: 0; }
 .xp-link { width: 100%; min-height: 70px; font: inherit; font-size: 12px; border-radius: 10px; padding: 8px; }
 #xp select { height: 44px; border-radius: 10px; font: inherit; font-size: 15px; padding: 0 10px; }
+.card .photo { position: relative; }
+.card .photo small { position: absolute; right: 6px; bottom: 6px; padding: 2px 6px; border-radius: 6px; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; font-weight: 500; }
