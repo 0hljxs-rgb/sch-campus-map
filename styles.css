@@ -395,3 +395,5 @@ svg { display: block; }
 #legend i.road { width: 22px; height: 9px; border-radius: 3px; background: #8F949D; }
 #legend i.walk { width: 22px; height: 9px; border-radius: 3px; background: #DDD9D0; }
 :root[data-theme="dark"] #legend i.walk { background: #4F5663; }
+
+#plane > #roads, #legend { display: none; }
