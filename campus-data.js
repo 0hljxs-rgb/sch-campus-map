@@ -106,12 +106,6 @@ export const GEO = null;
 // 엘리베이터: 건물 번호 → true(있음) / false(없음). 비어 있으면 '확인 중'
 export const ELEVATORS = {};
 // 건물 사진: assets/photos/<건물번호>.jpg 가 있는 건물 번호
-export const PHOTOS = [2, 16, 18, 22, 23];
-// 사진 출처 (위키미디어 공용, 라이선스 표기 필수)
-export const PHOTO_CREDIT = {
-  2: '순천향대학교 · CC BY 3.0 · 위키미디어 공용',
-  16: 'Moodeapo · CC BY-SA 4.0 · 위키미디어 공용',
-  18: 'Curtness · CC BY-SA 3.0 · 위키미디어 공용 (도서관 가는 길)',
-  22: 'Moodeapo · CC BY-SA 4.0 · 위키미디어 공용 (향설1·2관 전경)',
-  23: 'Moodeapo · CC BY-SA 4.0 · 위키미디어 공용 (향설1·2관 전경)',
-};
+export const PHOTOS = [1, 2, 3, 4, 5, 7, 8, 9, 11, 15, 16, 17, 18, 19, 22, 23, 24, 25, 26, 27, 28, 32];
+// 사진 출처: 순천향대학교 홈페이지 캠퍼스 갤러리 (사용 허가 받음)
+export const PHOTO_CREDIT = {};

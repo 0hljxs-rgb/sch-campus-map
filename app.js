@@ -267,7 +267,7 @@ function renderSheet() {
     const aed = AEDS.filter((a) => a[0] === b.name);
     const ev = ELEVATORS[b.n];
     const photo = PHOTOS.includes(b.n)
-      ? `<button type="button" class="photo" data-act="photo" style="background-image:url(assets/photos/${b.n}.jpg)" aria-label="${esc(b.name)} 사진 크게 보기"><small>📷 ${esc(PHOTO_CREDIT[b.n] || '')}</small></button>`
+      ? `<button type="button" class="photo" data-act="photo" style="background-image:url(assets/photos/${b.n}.jpg)" aria-label="${esc(b.name)} 사진 크게 보기"><small>📷 ${esc(PHOTO_CREDIT[b.n] || '사진: 순천향대학교')}</small></button>`
       : `<div class="photo none"><span>📷 건물 사진 준비 중</span></div>`;
     return `<article class="card">${photo}<div class="band" style="background:${b.base}"></div><div class="body">
       <div class="head"><div><div class="meta">${b.code ? `<span class="code mono">${esc(b.code)}</span>` : ''}${CAT_LABEL[b.c]}</div><h2>${esc(b.name)}</h2></div>
@@ -449,7 +449,7 @@ $('sheet-body').addEventListener('click', (e) => {
   if (e.target.closest('[data-act="clear"]')) { select(state.sel, { focus: false }); return; }
   if (e.target.closest('[data-act="photo"]')) {
     const v = document.createElement('div'); v.className = 'photo-view';
-    v.innerHTML = `<img src="assets/photos/${state.sel}.jpg" alt=""><span>${esc(PHOTO_CREDIT[state.sel] || '')} · 눌러서 닫기</span>`;
+    v.innerHTML = `<img src="assets/photos/${state.sel}.jpg" alt=""><span>${esc(PHOTO_CREDIT[state.sel] || '사진: 순천향대학교')} · 눌러서 닫기</span>`;
     v.addEventListener('click', () => v.remove()); document.body.appendChild(v); return;
   }
   const row = e.target.closest('.row[data-n]');
