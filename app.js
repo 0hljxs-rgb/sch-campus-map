@@ -124,7 +124,9 @@ function renderStatic() {
     return d; };
   const car = ROADS.car.map(curve), walk = ROADS.walk.map(curve);
   const g = (cls, list) => `<g class="${cls}">${list.map((d) => `<path d="${d}"/>`).join('')}</g>`;
-  $('roads').innerHTML = g('w', walk) + g('c-edge', car) + g('c-fill', car);
+  // 차 없는 거리: 학생회관 → 자연과학관 (옅은 네이비)
+  const free = '<path class="free" d="M930,914 L1270,915"/>';
+  $('roads').innerHTML = g('w', walk) + g('c-edge', car) + g('c-fill', car) + free;
   renderBuildings();
   // markers
   const pois = POIS.map(([px, py, k]) => k === 'bus'
