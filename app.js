@@ -107,7 +107,13 @@ function renderStatic() {
   const dk = state.dark;
   const greens = dk ? [['#4E6A4C', '#2C4030'], ['#486447', '#283B2B'], ['#557253', '#30462F'], ['#435E43', '#263826']] : [['#BDD0A4', '#7C9970'], ['#B1C798', '#718F64'], ['#C6D8AE', '#86A276'], ['#AABF8F', '#6A895D']];
   $('ground').src = dk ? 'assets/ground-dark.svg' : 'assets/ground.svg';
-  $('layer-trees').innerHTML = buildTreePoints().filter((q, i) => q[2] || i % 3 !== 1).map(([ix, iy, cf], i) => {
+  // 길·주차장 위 나무는 빼기 (차도·차 없는 거리 13, 보행로 6, 주차장 안)
+  const segD = (px, py, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy || 1;
+    const t = Math.max(0, Math.min(1, ((px - a[0]) * dx + (py - a[1]) * dy) / L)); return Math.hypot(px - a[0] - t * dx, py - a[1] - t * dy); };
+  const nearLine = (px, py, list, r) => list.some((w) => w.some((a, k) => k && segD(px, py, w[k - 1], a) < r));
+  const onWay = ([px, py]) => nearLine(px, py, ROADS.car, 13) || nearLine(px, py, ROADS.free, 13) || nearLine(px, py, ROADS.walk, 6) ||
+    PARKING.some(([x1, x2, y1, y2]) => px > x1 - 6 && px < x2 + 6 && py > y1 - 6 && py < y2 + 6);
+  $('layer-trees').innerHTML = buildTreePoints().filter((q, i) => (q[2] || i % 3 !== 1) && !onWay(q)).map(([ix, iy, cf], i) => {
     const sz = 13 + Math.round(Math.abs(Math.sin(i * 7.3)) * 6);
     const conifer = cf || (ix > 1380 && iy > 940);
     const x = X(ix), y = Y(iy);
