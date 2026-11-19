@@ -390,7 +390,7 @@ svg { display: block; }
 #roads .c-edge path { stroke: #C7BFAF; stroke-width: 13; }
 #roads .c-fill path { stroke: #FFFFFF; stroke-width: 10; }
 #roads .w path { stroke: #B8AF9E; stroke-width: 2.4; stroke-dasharray: 5 4; }
-#roads path.free { stroke: #B9C4DD; stroke-width: 15; stroke-linecap: round; }
+#roads path.free { stroke: #B9C4DD; stroke-width: 12; stroke-linecap: round; }
 :root[data-theme="dark"] #roads path.free { stroke: #3B4A6B; }
 #legend i.free { width: 22px; height: 9px; border-radius: 5px; background: #B9C4DD; }
 :root[data-theme="dark"] #roads .c-edge path { stroke: #1E232B; }
