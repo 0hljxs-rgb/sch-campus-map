@@ -61,27 +61,12 @@
 <rect x="900" y="945" width="112" height="85" rx="3" fill="#403C34" stroke="#4F5865" stroke-width="1.5"></rect>
 <rect x="908" y="953" width="96" height="69" fill="none" stroke="#4F5865" stroke-width="1"></rect>
 <line x1="956" y1="953" x2="956" y2="1022" stroke="#4F5865" stroke-width="1"></line>
-<rect x="846" y="945" width="48" height="85" rx="3" fill="#353A44"></rect>
-<g stroke="#4F5865" stroke-width="1"><path d="M846,955 H864 M846,965 H864 M846,975 H864 M846,985 H864 M846,995 H864 M846,1005 H864 M846,1015 H864 M876,955 H894 M876,965 H894 M876,975 H894 M876,985 H894 M876,995 H894 M876,1005 H894 M876,1015 H894"></path></g>
-<circle cx="870" cy="988" r="7" fill="#3A5A9E"></circle>
-<text x="870" y="992" text-anchor="middle" font-size="9" font-weight="700" fill="#FFFFFF">P</text>
+
 
 <rect x="995" y="1062" width="100" height="38" rx="2" fill="#3D5869"></rect>
 <g fill="none" stroke="#4F5865" stroke-width="0.9"><rect x="999" y="1066" width="21" height="30"></rect><rect x="1023" y="1066" width="21" height="30"></rect><rect x="1047" y="1066" width="21" height="30"></rect><rect x="1071" y="1066" width="21" height="30"></rect></g>
-<rect x="1503" y="782" width="64" height="26" rx="3" fill="#353A44"></rect>
-<g stroke="#4F5865" stroke-width="1"><path d="M1513,782 V790 M1523,782 V790 M1533,782 V790 M1543,782 V790 M1553,782 V790 M1513,800 V808 M1523,800 V808 M1533,800 V808 M1543,800 V808 M1553,800 V808"></path></g>
-<circle cx="1560" cy="795" r="5.5" fill="#3A5A9E"></circle>
-<text x="1560" y="798.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="#FFFFFF">P</text>
-<rect x="1466" y="828" width="34" height="74" rx="3" fill="#353A44"></rect>
-<g stroke="#4F5865" stroke-width="1"><path d="M1466,838 H1479 M1466,848 H1479 M1466,858 H1479 M1466,868 H1479 M1466,878 H1479 M1466,888 H1479 M1487,838 H1500 M1487,848 H1500 M1487,858 H1500 M1487,868 H1500 M1487,878 H1500 M1487,888 H1500"></path></g>
-<circle cx="1483" cy="865" r="5.5" fill="#3A5A9E"></circle>
-<text x="1483" y="868.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="#FFFFFF">P</text>
-<rect x="1573" y="828" width="38" height="74" rx="3" fill="#353A44"></rect>
-<g stroke="#4F5865" stroke-width="1"><path d="M1573,838 H1588 M1573,848 H1588 M1573,858 H1588 M1573,868 H1588 M1573,878 H1588 M1573,888 H1588 M1596,838 H1611 M1596,848 H1611 M1596,858 H1611 M1596,868 H1611 M1596,878 H1611 M1596,888 H1611"></path></g>
-<circle cx="1592" cy="865" r="6" fill="#3A5A9E"></circle>
-<text x="1592" y="868.5" text-anchor="middle" font-size="8" font-weight="700" fill="#FFFFFF">P</text>
-<rect x="1505" y="928" width="68" height="26" rx="3" fill="#353A44"></rect>
-<g stroke="#4F5865" stroke-width="1"><path d="M1515,928 V936 M1525,928 V936 M1535,928 V936 M1545,928 V936 M1555,928 V936 M1563,928 V936 M1515,946 V954 M1525,946 V954 M1535,946 V954 M1545,946 V954 M1555,946 V954 M1563,946 V954"></path></g>
-<circle cx="1512" cy="941" r="5.5" fill="#3A5A9E"></circle>
-<text x="1512" y="944.2" text-anchor="middle" font-size="7.5" font-weight="700" fill="#FFFFFF">P</text>
+
+
+
+
 </svg>
