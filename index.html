@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="캠퍼스맵">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body>
 <main id="app">
@@ -23,7 +23,7 @@
     <div id="stage">
       <div id="plane">
         <img id="ground" src="assets/ground.svg" alt="" draggable="false">
-        <div id="roads" aria-hidden="true"></div>
+        <svg id="roads" viewBox="357 270 1286 1025" preserveAspectRatio="none" aria-hidden="true"></svg>
         <div id="layer-trees"></div>
         <div id="layer-buildings"></div>
         <div id="layer-markers"></div>
@@ -31,7 +31,7 @@
     </div>
   </div>
 
-  <div id="legend" aria-label="범례"><span><i class="road"></i>차도</span><span><i class="walk"></i>보행로·광장</span></div>
+  <div id="legend" aria-label="범례"><span><i class="road"></i>차도</span><span><i class="walk"></i>보행로</span></div>
 
   <header id="topbar">
     <div class="search">

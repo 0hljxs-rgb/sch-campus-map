@@ -1,4 +1,4 @@
-import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS, PHOTO_CREDIT, OFFICIAL } from './campus-data.js';
+import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS, PHOTO_CREDIT, OFFICIAL, ROADS } from './campus-data.js';
 
 // ---------- geometry (same projection as the design canvas) ----------
 const C = Math.cos(50 * Math.PI / 180), S = Math.sin(50 * Math.PI / 180);
@@ -117,6 +117,14 @@ function renderStatic() {
     return `<div class="tsh" style="left:${x - sz / 2 + 4}px;top:${y - sz / 4 + 3}px;width:${sz * 1.1}px;height:${sz / 2}px"></div>` +
       `<div class="bb tree" style="left:${x}px;top:${y}px"><div class="trunk"></div><div class="crown" style="left:${-sz / 2}px;width:${sz}px;height:${ch}px;border-radius:${shape};background:radial-gradient(circle at 35% 30%, ${g[0]} 0%, ${g[1]} 85%)"></div></div>`;
   }).join('');
+  // 길 (네이버지도 스타일): 부드러운 곡선(Catmull-Rom)
+  const curve = (w) => { let d = `M${w[0][0]},${w[0][1]}`;
+    for (let i = 0; i < w.length - 1; i++) { const p0 = w[i - 1] || w[i], p1 = w[i], p2 = w[i + 1], p3 = w[i + 2] || p2;
+      d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)},${(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)},${(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0]},${p2[1]}`; }
+    return d; };
+  const car = ROADS.car.map(curve), walk = ROADS.walk.map(curve);
+  const g = (cls, list) => `<g class="${cls}">${list.map((d) => `<path d="${d}"/>`).join('')}</g>`;
+  $('roads').innerHTML = g('w', walk) + g('c-edge', car) + g('c-fill', car);
   renderBuildings();
   // markers
   const pois = POIS.map(([px, py, k]) => k === 'bus'
