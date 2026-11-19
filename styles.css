@@ -392,6 +392,8 @@ svg { display: block; }
 #roads .w path { stroke: #B8AF9E; stroke-width: 2.4; stroke-dasharray: 5 4; }
 #roads path.free { stroke: #B9C4DD; stroke-width: 12; stroke-linecap: round; }
 :root[data-theme="dark"] #roads path.free { stroke: #3B4A6B; }
+#roads .free-t { font-size: 8.5px; font-weight: 700; letter-spacing: 3px; fill: #2D3E66; }
+:root[data-theme="dark"] #roads .free-t { fill: #DDE4F3; }
 #legend i.free { width: 22px; height: 9px; border-radius: 5px; background: #B9C4DD; }
 :root[data-theme="dark"] #roads .c-edge path { stroke: #1E232B; }
 :root[data-theme="dark"] #roads .c-fill path { stroke: #59606C; }
