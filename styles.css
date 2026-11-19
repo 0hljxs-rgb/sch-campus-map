@@ -398,6 +398,11 @@ svg { display: block; }
 :root[data-theme="dark"] #roads .c-edge path { stroke: #1E232B; }
 :root[data-theme="dark"] #roads .c-fill path { stroke: #59606C; }
 :root[data-theme="dark"] #roads .w path { stroke: #6B717C; }
+#roads .pklot rect { fill: #DDD8CE; }
+#roads .pklot path { fill: none; stroke: #FFFFFF; stroke-width: 1; }
+:root[data-theme="dark"] #roads .pklot rect { fill: #3E444E; } :root[data-theme="dark"] #roads .pklot path { stroke: #5B626D; }
+#legend i.park { width: 22px; height: 9px; border-radius: 2px; background: repeating-linear-gradient(90deg, #DDD8CE 0 4px, #fff 4px 5px); }
+.pkm { width: 17px; height: 17px; border-radius: 5px; background: #fff; color: #2F6FD6; outline: 1.5px solid #2F6FD6; font-size: 11px; font-weight: 800; line-height: 17px; text-align: center; box-shadow: 0 2px 6px rgba(16,26,48,0.28); border: 1.5px solid #fff; }
 /* 범례 */
 #legend { position: absolute; left: 12px; bottom: calc(var(--sheet-peek, 120px) + 12px); z-index: 3; display: flex; gap: 10px; padding: 6px 10px; border-radius: 10px; background: var(--panel); box-shadow: 0 4px 14px rgba(16,26,48,0.16); font-size: 11.5px; font-weight: 600; color: var(--ink); pointer-events: none; }
 #legend span { display: flex; align-items: center; gap: 5px; }

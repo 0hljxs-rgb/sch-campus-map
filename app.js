@@ -1,4 +1,4 @@
-import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS, PHOTO_CREDIT, OFFICIAL, ROADS } from './campus-data.js';
+import { SPECS, CODES, FLAT_PLACES, buildTreePoints, AMENITIES, AEDS, SMOKING, POIS, FLOORS, OUTDOOR, ELEVATORS, PHOTOS, PHOTO_CREDIT, OFFICIAL, ROADS, PARKING } from './campus-data.js';
 
 // ---------- geometry (same projection as the design canvas) ----------
 const C = Math.cos(50 * Math.PI / 180), S = Math.sin(50 * Math.PI / 180);
@@ -127,7 +127,14 @@ function renderStatic() {
   // 차 없는 거리: 학생회관 → 자연과학관 (옅은 네이비)
   const free = ROADS.free.map((w) => `<path class="free" d="${curve(w)}"/>`).join('');
   const freeText = `<defs><path id="freepath" d="${curve(ROADS.free[0])}"/></defs><text class="free-t"><textPath href="#freepath" startOffset="50%" text-anchor="middle" dominant-baseline="central">차 없는 거리</textPath></text>`;
-  $('roads').innerHTML = g('w', walk) + g('c-edge', car) + g('c-fill', car) + free + freeText;
+  // 주차장: 의료과학관 주차장처럼 회색 바닥 + 양쪽 주차칸 흰 선 + 가운데 통로
+  const park = PARKING.map(([x1, x2, y1, y2, n]) => {
+    const w = x2 - x1, h = y2 - y1, wide = w >= h, L = [];
+    if (wide) { const sl = Math.min(18, h * 0.38); for (let x = x1 + 10; x < x2 - 4; x += 10) L.push(`M${x},${y1}v${sl}M${x},${y2}v${-sl}`); }
+    else { const sl = Math.min(18, w * 0.38); for (let y = y1 + 10; y < y2 - 4; y += 10) L.push(`M${x1},${y}h${sl}M${x2},${y}h${-sl}`); }
+    return `<g class="pklot"><title>주차장 · ${n}</title><rect x="${x1}" y="${y1}" width="${w}" height="${h}" rx="3"/><path d="${L.join('')}"/></g>`;
+  }).join('');
+  $('roads').innerHTML = park + g('w', walk) + g('c-edge', car) + g('c-fill', car) + free + freeText;
   renderBuildings();
   // markers
   const pois = POIS.map(([px, py, k]) => k === 'bus'
@@ -144,7 +151,9 @@ function renderStatic() {
     `<span class="name">${esc(b.label)}</span>` +
     (AEDS.some((a) => a[0] === b.name) ? `<span class="aedb" role="img" aria-label="자동심장충격기(AED) 있음">${AED_SVG}AED</span>` : '') +
     `</button><div class="tip"></div></div></div>`).join('');
-  $('layer-markers').innerHTML = smoke + pois + amen + chips;
+  const pmk = PARKING.map(([x1, x2, y1, y2, n]) =>
+    `<div class="bb" style="left:${X((x1 + x2) / 2)}px;top:${Y((y1 + y2) / 2)}px;--z:2px"><div class="in"><div class="pkm" role="img" aria-label="주차장 · ${esc(n)}">P</div></div></div>`).join('');
+  $('layer-markers').innerHTML = smoke + pmk + pois + amen + chips;
   scheduleDeclutter();
 }
 function renderBuildings() { $('layer-buildings').innerHTML = masses.map(massHTML).join(''); }
