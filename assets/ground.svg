@@ -43,7 +43,7 @@
 
 
 </g>
-<text font-size="9.5" font-weight="700" fill="#8A7748" letter-spacing="4"><textPath href="#rf" startOffset="44%" dy="3">차 없는 거리</textPath></text>
+
 
 <ellipse cx="1104" cy="472" rx="17" ry="11" fill="url(#lakeG)" stroke="#FFFFFF" stroke-width="1.5"></ellipse>
 <text x="795" y="1181" text-anchor="middle" font-size="9" font-weight="600" fill="#5B6676" letter-spacing="1">통학버스 승강장</text>
